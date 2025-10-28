@@ -1,11 +1,6 @@
 # Copyright 2019 ForgeFlow S.L.
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
-import calendar
 import time
-from datetime import datetime
-from time import mktime
-
-from dateutil.relativedelta import relativedelta
 
 from odoo import SUPERUSER_ID, _, fields, models
 from odoo.exceptions import ValidationError
@@ -42,10 +37,6 @@ class ResCompany(models.Model):
         period_lock_to_date = vals.get("period_lock_to_date")
         fiscalyear_lock_to_date = vals.get("fiscalyear_lock_to_date")
 
-        next_month = datetime.now() + relativedelta(months=+1)
-        days_next_month = calendar.monthrange(next_month.year, next_month.month)
-        next_month = next_month.replace(day=days_next_month[1]).timetuple()
-        next_month = datetime.fromtimestamp(mktime(next_month)).date()
         for company in self:
             old_fiscalyear_lock_to_date = company.fiscalyear_lock_to_date
 
@@ -83,17 +74,6 @@ class ResCompany(models.Model):
                     fiscalyear_lock_to_date = old_fiscalyear_lock_to_date
                 else:
                     continue
-
-            # The user attempts to set a lock date for advisors after
-            # the first day of next month
-            if fiscalyear_lock_to_date < next_month:
-                raise ValidationError(
-                    _(
-                        "You cannot lock a period that is not finished yet. "
-                        "Please make sure that the lock date for advisors is "
-                        "set at or after the last day of the next month."
-                    )
-                )
 
             # In case of no new period lock to date in vals,
             # fallback to the one defined in the company
