@@ -527,15 +527,6 @@ class AccountAsset(models.Model):
         self.ensure_one()
         ctx = dict(self.env.context, active_ids=self.ids, active_id=self.id)
 
-        early_removal = False
-        if self.method in ["linear-limit", "degr-limit"]:
-            if self.value_residual != self.salvage_value:
-                early_removal = True
-        elif self.value_residual:
-            early_removal = True
-        if early_removal:
-            ctx.update({"early_removal": True})
-
         return {
             "name": _("Generate Asset Removal entries"),
             "view_mode": "form",
